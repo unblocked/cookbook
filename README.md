@@ -22,6 +22,9 @@ Designed for interactive sessions where a human reviews findings and approves de
 | [plan](recipes/plan/) | Planning that produces a validated, self-contained implementation plan — presented for user approval |
 | [enrich-ticket](recipes/enrich-ticket/) | Enriches an issue from any tracker with related PRs, code paths, and historical context |
 | [validate-bug](recipes/validate-bug/) | Validates a bug report by correlating symptoms with recent changes and verifying against code |
+| [investigate-incident](recipes/investigate-incident/) | Plans an incident investigation with ranked hypotheses and parallel investigation tracks |
+| [gather-evidence](recipes/gather-evidence/) | Gathers and correlates evidence from code, infrastructure, and organizational sources |
+| [recommend-fixes](recipes/recommend-fixes/) | Produces ranked fix recommendations validated against historical patterns |
 
 ### Headless (no human-in-the-loop)
 
@@ -34,6 +37,9 @@ Designed for autonomous execution — CI/CD, `claude -p`, sub-agents, scheduled 
 | [headless-plan](recipes/headless-plan/) | Autonomous planning — validated, self-contained implementation plan without writing code |
 | [headless-enrich-ticket](recipes/headless-enrich-ticket/) | Autonomous ticket enrichment — related PRs, code paths, and historical context |
 | [headless-validate-bug](recipes/headless-validate-bug/) | Autonomous bug validation — correlates symptoms with recent changes, verifies against code |
+| [headless-investigate-incident](recipes/headless-investigate-incident/) | Autonomous incident investigation — ranked hypotheses, agent-optimized output |
+| [headless-gather-evidence](recipes/headless-gather-evidence/) | Autonomous evidence gathering — correlation timeline, agent-optimized output |
+| [headless-recommend-fixes](recipes/headless-recommend-fixes/) | Autonomous fix recommendations — tiered fixes validated against history, agent-optimized output |
 
 ## Running Headless
 
