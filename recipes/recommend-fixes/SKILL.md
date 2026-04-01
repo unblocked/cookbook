@@ -23,7 +23,7 @@ Produce ranked fix recommendations for the incident in the user's prompt. Valida
 
 ## How This Works
 
-1. **Parse the incident** via `link_resolver` (URL), `data_retrieval` (ticket ID), or from the prompt. Extract: root cause (confirmed or suspected), affected service(s), severity, current impact, what's been tried so far.
+1. **Parse the incident** via `link_resolver` (URL), `data_retrieval` (Jira ticket), `research_task` (Datadog/Sentry incident), or from the prompt. Extract: root cause (confirmed or suspected), affected service(s), severity, current impact, what's been tried so far.
 2. **Research fix patterns** via `research_task`:
    - Historical fixes (`effort: medium`): "How has [root cause type] been fixed before in [affected service] or similar services? Past remediation PRs, rollback procedures, hotfix patterns. Were there regressions or side effects from past fixes?"
    - Team patterns (`effort: medium`): "What are the team's patterns for [type of fix — scaling, config, code, rollback]? Deployment and testing requirements for production changes? Change management process? Feature flags or kill switches available?"
@@ -47,4 +47,5 @@ Produce ranked fix recommendations for the incident in the user's prompt. Valida
 | Conventions and constraints for specific code | `unblocked_context_engine` | One entity, focused question about how to change it |
 | Prior occurrences of this error | `failure_debugging` | Error-specific history and past fixes |
 | Fetch incident details from URL | `link_resolver` | Already have the URL |
-| All past incidents for a service (exhaustive list) | `data_retrieval` | Need complete filtered list for pattern matching |
+| All past Jira tickets for a service (exhaustive list) | `data_retrieval` | Need complete filtered list for pattern matching |
+| Datadog/Sentry incident data for a service | `research_task` | Direct Datadog/Sentry data requires cross-source investigation |

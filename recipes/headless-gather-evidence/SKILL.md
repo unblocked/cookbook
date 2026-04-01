@@ -22,7 +22,7 @@ Autonomous evidence gathering for headless execution. Apply this to the incident
 
 ## How This Works
 
-1. **Parse the incident** via `link_resolver` (URL), `data_retrieval` (ticket ID), or from the prompt. Extract: affected service(s), symptom description, start time, error messages, severity, and any hypotheses to test.
+1. **Parse the incident** via `link_resolver` (URL), `data_retrieval` (Jira ticket), `research_task` (Datadog/Sentry incident), or from the prompt. Extract: affected service(s), symptom description, start time, error messages, severity, and any hypotheses to test.
 2. **Gather cross-system evidence** via `research_task`:
    - Code and infrastructure evidence (`effort: medium`): "What code paths handle [affected functionality] in [service]? Recent changes to error handling, retry logic, configuration, resource limits? Deployment configs (k8s, terraform, helm)? What do the code changes in recent PRs actually do?"
    - Organizational evidence (`effort: medium`): "Recent Slack discussions, deployment announcements, or on-call notes mentioning [affected service] or [symptom]? Related incidents, Jira tickets, or escalations? Who has been working in this area?"
@@ -87,4 +87,5 @@ GAPS
 | Focused question about a specific code path | `unblocked_context_engine` | One entity, one question — need most relevant context |
 | Prior occurrences of an error message | `failure_debugging` | Error-specific history and past fixes |
 | Fetch incident details from URL | `link_resolver` | Already have the URL |
-| All tickets matching a filter (e.g., open incidents for service) | `data_retrieval` | Need exhaustive list, not just top results |
+| All Jira tickets matching a filter (e.g., open tickets for service) | `data_retrieval` | Need exhaustive list, not just top results |
+| Datadog/Sentry incident data for a service | `research_task` | Direct Datadog/Sentry data requires cross-source investigation |
