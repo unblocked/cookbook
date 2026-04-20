@@ -4,26 +4,26 @@ description: >
   Autonomous coding workflow for headless and background agent runs with no
   human in the loop. Use when running as a sub-agent, in CI/CD, via
   `claude --headless`, or any scheduled/background task where the agent must
-  run to completion autonomously. Uses research_task for broad context
+  run to completion autonomously. Uses context_research for broad context
   hydration and dual review gates for quality without user checkpoints.
 ---
 
 # Headless Workflow
 
-Autonomous 7-phase coding workflow for headless execution. Apply this workflow to the task provided in the user's prompt. The agent runs to completion without user checkpoints, uses `research_task` for broad context hydration, and makes autonomous decisions at review gates.
+Autonomous 7-phase coding workflow for headless execution. Apply this workflow to the task provided in the user's prompt. The agent runs to completion without user checkpoints, uses `context_research` for broad context hydration, and makes autonomous decisions at review gates.
 
 ## Gotchas
 
-- **Skipping hydration because "the task is simple."** No human safety net means even trivial tasks need at least one `research_task` with `effort: low`. The cost is seconds; the cost of missing context in a headless run is a bad implementation with no one watching.
-- **Using `research_task` for review gates.** Review gates (Phases 3 and 6) need precision — "does THIS plan match THIS pattern?" Use `unblocked_context_engine` for reviews. `research_task` is for broad discovery in Phase 1.
+- **Skipping hydration because "the task is simple."** No human safety net means even trivial tasks need at least one `context_research` with `effort: low`. The cost is seconds; the cost of missing context in a headless run is a bad implementation with no one watching.
+- **Using `effort: high` for review gates.** Review gates (Phases 3 and 6) need precision — "does THIS plan match THIS pattern?" Use `context_research` with `effort: low` for reviews. Broad, high-effort research is for Phase 1 discovery.
 - **Infinite review loops.** Cap review iterations at 3. If the plan or code hasn't converged after 3 loops, proceed with best-effort and log the unresolved concerns. Headless agents that loop forever are worse than agents that ship imperfect code with documented caveats.
 - **Not logging decisions.** Headless runs need audit trails. Log every review finding, every loop-back decision, and every abort. Without this, debugging a bad headless output is impossible.
-- **Treating `research_task` results as ground truth.** Results reflect the default branch and organizational knowledge, not your workspace. Cross-reference key claims (file paths, function names, patterns) against local files before building on them.
+- **Treating `context_research` results as ground truth.** Results reflect the default branch and organizational knowledge, not your workspace. Cross-reference key claims (file paths, function names, patterns) against local files before building on them.
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
 │                                                              │
-│  1. HYDRATE        (research_task)                           │
+│  1. HYDRATE        (context_research, effort: medium/high)   │
 │     │              Broad multi-source context                │
 │     │              gathering in 2-3 calls                    │
 │     ▼                                                        │
@@ -31,23 +31,23 @@ Autonomous 7-phase coding workflow for headless execution. Apply this workflow t
 │     │              Design implementation with                │
 │     │              inlined context                           │
 │     ▼                                                        │
-│  3. REVIEW PLAN    (Unblocked)                      ◄──┐     │
-│     │              Precision queries against           │     │
-│     │              org knowledge                       │     │
-│     ▼                                                  │     │
-│  4. REVISE PLAN    (Agent, autonomous)                 │     │
-│     │              Major issues → loop (max 3)  ───────┘     │
+│  3. REVIEW PLAN    (context_research, effort: low) ◄──┐      │
+│     │              Precision queries against          │      │
+│     │              org knowledge                      │      │
+│     ▼                                                 │      │
+│  4. REVISE PLAN    (Agent, autonomous)                │      │
+│     │              Major issues → loop (max 3)  ──────┘      │
 │     │              Minor/none → proceed                      │
 │     ▼                                                        │
 │  5. GENERATE CODE  (Agent)                                   │
 │     │              Implement the validated plan              │
 │     ▼                                                        │
-│  6. REVIEW CODE    (Unblocked)                      ◄──┐     │
-│     │              Verify code against context,        │     │
-│     │              patterns, conventions               │     │
-│     ▼                                                  │     │
-│  7. REVISE CODE    (Agent, autonomous)                 │     │
-│     │              Issues → loop (max 3) ──────────────┘     │
+│  6. REVIEW CODE    (context_research, effort: low) ◄──┐      │
+│     │              Verify code against context,       │      │
+│     │              patterns, conventions              │      │
+│     ▼                                                 │      │
+│  7. REVISE CODE    (Agent, autonomous)                │      │
+│     │              Issues → loop (max 3) ─────────────┘      │
 │     │              Pass → done                               │
 │     ▼                                                        │
 │     DONE → structured completion output                      │
@@ -55,11 +55,11 @@ Autonomous 7-phase coding workflow for headless execution. Apply this workflow t
 └──────────────────────────────────────────────────────────────┘
 ```
 
-Labels: **(research_task)** = broad multi-source investigation; **(Unblocked)** = targeted precision queries via `unblocked_context_engine`; **(Agent)** = the AI coding agent.
+Labels: **(Hydrate — broad)** = `context_research` with `effort: medium` or `high`, multi-source investigation; **(Review — precision)** = `context_research` with `effort: low`, anchored on a single entity or plan element; **(Agent)** = the AI coding agent.
 
 ## Principles
 
-- **Multiple specific queries > one broad query.** Even with `research_task`, write 2-3 focused queries rather than one sprawling one.
+- **Multiple specific queries > one broad query.** Even when running `context_research`, write 2-3 focused queries rather than one sprawling one.
 - **Two review gates, not one.** Both are mandatory even in headless mode. The plan review prevents writing wrong code. The code review catches execution gaps.
 - **Plans must be specific enough to review.** Name files, reference patterns, cite decisions. Vague plans can't be meaningfully reviewed by either humans or tools.
 - **Default to existing patterns.** When Unblocked shows the team does something a certain way, follow it. Consistency wins.
@@ -70,12 +70,12 @@ Labels: **(research_task)** = broad multi-source investigation; **(Unblocked)** 
 
 ## Scaling to Task Size
 
-- **Trivial changes** (typo fix, rename, one-line config tweak): Run one `research_task` with `effort: low`, then skip to Phase 5. Always run Phase 6 before finishing.
-- **Small changes** (add a helper, adjust logic in one file): Run Phase 1 with one `research_task` at `effort: medium`, then proceed through the rest.
+- **Trivial changes** (typo fix, rename, one-line config tweak): Run one `context_research` with `effort: low`, then skip to Phase 5. Always run Phase 6 before finishing.
+- **Small changes** (add a helper, adjust logic in one file): Run Phase 1 with one `context_research` at `effort: medium`, then proceed through the rest.
 - **Standard changes** (new feature, bug fix, refactor): Run the full workflow as written.
 - **Large changes** (cross-cutting refactor, new subsystem): Run the full workflow, expect multiple review loops, and consider breaking the task into sub-tasks — running this workflow per sub-task.
 
-**When in doubt, run the full workflow.** The cost of an extra `research_task` call is seconds; the cost of missing context in a headless run is a bad implementation with no one to catch it.
+**When in doubt, run the full workflow.** The cost of an extra `context_research` call is seconds; the cost of missing context in a headless run is a bad implementation with no one to catch it.
 
 ## Task-Specific Hydration
 
@@ -101,26 +101,26 @@ When the task falls into a specific category, shape Phase 1 research calls to co
 
 ---
 
-## Phase 1: Hydrate Context (research_task)
+## Phase 1: Hydrate Context (context_research, broad)
 
-Before planning, gather broad context using `research_task`. This replaces the 4-6 individual `unblocked_context_engine` + `data_retrieval` calls in the interactive workflow with 2-3 focused research calls that cover more ground per query.
+Before planning, gather broad context using `context_research` with `effort: medium` or `high`. This replaces the 4-6 individual targeted calls in the interactive workflow with 2-3 focused research calls that cover more ground per query.
 
 **Required research calls:**
 
-1. **System understanding** (`effort: medium`): "Explain how [feature area] works in this codebase, including the architecture, conventions the team follows for [relevant pattern], and any existing utilities or modules that should be reused rather than reinvented."
+1. **System understanding** (`context_research`, `effort: medium`): "Explain how [feature area] works in this codebase, including the architecture, conventions the team follows for [relevant pattern], and any existing utilities or modules that should be reused rather than reinvented."
 
-2. **History and prior art** (`effort: medium`): "What decisions have been made about [related area]? Has the team tried [this kind of change] before, and what happened? Include recent PRs and issues related to [area being changed]."
+2. **History and prior art** (`context_research`, `effort: medium`): "What decisions have been made about [related area]? Has the team tried [this kind of change] before, and what happened? Include recent PRs and issues related to [area being changed]."
 
-3. **Risks and constraints** (`effort: low`, conditional — run for standard/large tasks): "What are the known gotchas, edge cases, or constraints in [area]? Are there active migrations or direction changes that could conflict with [planned change]?"
+3. **Risks and constraints** (`context_research`, `effort: low`, conditional — run for standard/large tasks): "What are the known gotchas, edge cases, or constraints in [area]? Are there active migrations or direction changes that could conflict with [planned change]?"
 
 **Example** — "add rate limiting to the API":
 ```
-research_task (effort: medium): "Explain how the API middleware pipeline works
+context_research (effort: medium): "Explain how the API middleware pipeline works
 in this codebase, including existing rate limiting or throttling mechanisms,
 the patterns the team uses for middleware configuration, and any shared
 utilities in the middleware layer that should be reused."
 
-research_task (effort: medium): "What decisions have been made about API
+context_research (effort: medium): "What decisions have been made about API
 authentication and middleware? Has rate limiting been attempted or discussed
 before? Include recent PRs touching the API layer and any relevant Slack or
 Jira discussions."
@@ -132,7 +132,7 @@ Jira discussions."
 3. What was tried before and what were the outcomes?
 4. What are the risks?
 
-If any answer is "unknown," make a targeted follow-up: another `research_task` with `effort: low` for a multi-source gap, or a single `unblocked_context_engine` query for a focused gap.
+If any answer is "unknown," make a targeted follow-up: another `context_research` with `effort: low` for a focused gap. On the Unblocked CLI you can also use a fine-grained tool (`context_search_code`, `context_search_prs`, `context_search_issues`, `context_search_documentation`, `context_search_messages`) when the gap is clearly single-source.
 
 **Collect and carry forward:**
 - Existing modules to extend (not reinvent)
@@ -160,21 +160,21 @@ Design the implementation **referencing specific findings from Phase 1**. The pl
 
 ---
 
-## Phase 3: Review Plan (Unblocked)
+## Phase 3: Review Plan (context_research, precision)
 
 **CRITICAL GATE — Do not skip this phase.**
 
-Before writing any code, submit the plan for critical review using targeted precision queries.
+Before writing any code, submit the plan for critical review using targeted precision queries — `context_research` with `effort: low`, each anchored on a single question about a single entity or plan element.
 
 **Required queries (run all of these, referencing the specific plan):**
 
-1. `unblocked_context_engine`: "We plan to [summarize approach]. Does this align with how [related system] works in this codebase? Are there existing patterns we should follow instead?"
+1. `context_research` (`effort: low`): "We plan to [summarize approach]. Does this align with how [related system] works in this codebase? Are there existing patterns we should follow instead?"
 
-2. `unblocked_context_engine`: "We plan to modify/create [specific files]. What do we need to know about these files and their dependencies? Are there conventions for how changes in this area are typically structured?"
+2. `context_research` (`effort: low`): "We plan to modify/create [specific files]. What do we need to know about these files and their dependencies? Are there conventions for how changes in this area are typically structured?"
 
-3. `unblocked_context_engine`: "Has the team tried [planned approach] before? Were there any problems or rejected alternatives?"
+3. `context_research` (`effort: low`): "Has the team tried [planned approach] before? Were there any problems or rejected alternatives?"
 
-4. `unblocked_context_engine`: "What could go wrong with [planned approach]? Are there edge cases, performance concerns, or integration issues we should consider?"
+4. `context_research` (`effort: low`): "What could go wrong with [planned approach]? Are there edge cases, performance concerns, or integration issues we should consider?"
 
 **What you're looking for:**
 
@@ -211,26 +211,26 @@ Implement the validated, reviewed plan.
 
 **During codegen:**
 - Follow the plan. Don't deviate from reviewed decisions without reason.
-- If you encounter something unexpected that contradicts the plan, re-query Unblocked via `unblocked_context_engine` rather than guessing.
-- If a build or runtime error occurs, use `failure_debugging` with the error message and surrounding context. Attempt the fix autonomously — surface known issues and past fixes.
+- If you encounter something unexpected that contradicts the plan, re-query Unblocked via `context_research` (`effort: low`) rather than guessing.
+- If a build or runtime error occurs, run a targeted `context_research` (`effort: low`) anchored on the error message and surrounding context to surface known issues and past fixes. Attempt the fix autonomously.
 
 ---
 
-## Phase 6: Review Code (Unblocked)
+## Phase 6: Review Code (context_research, precision)
 
 **CRITICAL GATE — Do not skip this phase.**
 
-After codegen, verify the generated code against organizational context using targeted queries.
+After codegen, verify the generated code against organizational context using targeted queries — `context_research` with `effort: low`.
 
 **Required queries (run all of these, referencing the actual code that was written):**
 
-1. `unblocked_context_engine`: "We wrote [summarize what was generated — new files, modified files, key patterns used]. Does this match how the team typically implements [this kind of thing] in this codebase?"
+1. `context_research` (`effort: low`): "We wrote [summarize what was generated — new files, modified files, key patterns used]. Does this match how the team typically implements [this kind of thing] in this codebase?"
 
-2. `unblocked_context_engine`: "Looking at [specific pattern/approach in generated code], is this consistent with the conventions in [area of codebase]? Are there existing utilities or helpers we should be using instead?"
+2. `context_research` (`effort: low`): "Looking at [specific pattern/approach in generated code], is this consistent with the conventions in [area of codebase]? Are there existing utilities or helpers we should be using instead?"
 
-3. `unblocked_context_engine`: "What are the team's testing conventions for [area changed]? Do the changes we made follow those patterns?"
+3. `context_research` (`effort: low`): "What are the team's testing conventions for [area changed]? Do the changes we made follow those patterns?"
 
-4. `unblocked_context_engine`: "Have there been issues in the past with [the approach taken in generated code] in this area of the codebase?"
+4. `context_research` (`effort: low`): "Have there been issues in the past with [the approach taken in generated code] in this area of the codebase?"
 
 **What you're looking for:**
 
@@ -281,11 +281,16 @@ When aborting, log the reason, what was attempted, what context was gathered, an
 
 ## Tool Selection
 
-| Question | Tool |
-|---|---|
-| Broad investigation (3+ unknowns, multi-source) | `research_task` |
-| How/why does X work? (focused, one entity) | `unblocked_context_engine` |
-| What was decided about X? | `unblocked_context_engine` |
-| Recent PRs/issues in area X | `data_retrieval` |
-| Contents of a specific PR/issue URL | `link_resolver` |
-| Debug a build/runtime failure | `failure_debugging` |
+| Question | Preferred tool | Fallback / Why |
+|---|---|---|
+| Broad investigation (3+ unknowns, multi-source) | `context_research` (`effort: medium` or `high`) | Cross-source synthesis |
+| How/why does X work? (focused, one entity) | `context_research` (`effort: low`) | One question, one entity |
+| What was decided about X? | `context_research` (`effort: low`) | Targeted precision query |
+| Recent PRs/issues in area X | `context_search_prs` / `context_search_issues` (CLI) | `context_research` with a steering `instruction` on MCP |
+| Code-only search across connected repos | `context_search_code` (CLI) | `context_research` with `"Prefer code and implementation results"` on MCP |
+| Docs / runbooks / ADRs | `context_search_documentation` (CLI) | `context_research` with `"Prefer documentation, wikis, and runbooks"` on MCP |
+| Slack / Teams threads | `context_search_messages` (CLI) | `context_research` with `"Prefer Slack threads and team conversations"` on MCP |
+| Contents of a specific PR/issue URL | `context_get_urls` | — |
+| Debug a build/runtime failure | `context_research` (`effort: low`) anchored on the error text | — |
+
+Fine-grained tools (`context_search_code`, `context_search_prs`, `context_search_issues`, `context_search_documentation`, `context_search_messages`) are available in the Unblocked CLI. On MCP they may return "tool not found" — fall back to `context_research` with an `instruction` that steers relevance. See the `unblocked-tools-guide` skill for the full mapping.

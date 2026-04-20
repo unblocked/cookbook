@@ -23,9 +23,9 @@ Autonomous investigation planning for headless execution. Apply this to the inci
 
 ## How This Works
 
-1. **Parse the incident** via `link_resolver` (URL), `data_retrieval` (Jira ticket), `research_task` (Datadog/Sentry incident), or from the prompt. Extract: alert name, affected service(s), symptom description, severity, start time, error messages, impacted metrics.
-2. **Check for related investigations** via `data_retrieval` (Jira tickets, Slack) and `research_task` (Datadog/Sentry incidents): all open incidents, active investigations, or recent postmortems for the affected service(s). Note findings to avoid duplicate work.
-3. **Hydrate with organizational context** via `research_task`:
+1. **Parse the incident** via `context_get_urls` (URL), `context_search_issues` or `context_research` (Jira ticket), `context_research` (Datadog/Sentry incident), or from the prompt. Extract: alert name, affected service(s), symptom description, severity, start time, error messages, impacted metrics.
+2. **Check for related investigations** via `context_search_issues` / `context_search_messages` (CLI) or `context_research` (Datadog/Sentry incidents): all open incidents, active investigations, or recent postmortems for the affected service(s). Note findings to avoid duplicate work.
+3. **Hydrate with organizational context** via `context_research`:
    - System understanding (`effort: medium`): "How does [affected service] work? Architecture, dependencies, upstream/downstream services, deployment pipeline, known failure modes, recent incidents."
    - Recent changes (`effort: medium`): "What changed in [affected service] and its dependencies in the last 48-72 hours? PRs merged, deployments, config changes, infrastructure changes, traffic pattern shifts."
 4. **Formulate hypotheses** — 3-5 candidate root causes, each with:
@@ -83,12 +83,14 @@ ESCALATION_TRIGGERS
 
 ## Tool Selection
 
-| Question | Tool | Why This Tool |
+| Question | Preferred tool | Fallback / Why |
 |---|---|---|
-| System architecture, history, failure modes | `research_task` | Cross-source synthesis needed |
-| Recent changes and deployments | `research_task` | Need to correlate PRs, deploys, and config across sources |
-| All open Jira tickets for a service (exhaustive list) | `data_retrieval` | Need complete filtered list, not just top results |
-| Datadog/Sentry incident data for a service | `research_task` | Direct Datadog/Sentry data requires cross-source investigation |
-| PRs most related to the affected subsystem | `unblocked_context_engine` | Need relevance-ranked results, not all PRs in a range |
-| Focused question about specific service behavior | `unblocked_context_engine` | One entity, one question |
-| Fetch incident details from URL | `link_resolver` | Already have the URL |
+| System architecture, history, failure modes | `context_research` (`effort: medium` or `high`) | Cross-source synthesis needed |
+| Recent changes and deployments | `context_research` (`effort: medium`) | Need to correlate PRs, deploys, and config across sources |
+| All open Jira tickets for a service (exhaustive list) | `context_search_issues` (CLI) | `context_research` with `"Prefer issue tracker results"` instruction |
+| Datadog/Sentry incident data for a service | `context_research` (`effort: medium`) | Direct incident-platform data requires cross-source investigation |
+| PRs most related to the affected subsystem | `context_search_prs` (CLI) | `context_research` with `"Prefer PR descriptions and review discussions"` instruction |
+| Focused question about specific service behavior | `context_research` (`effort: low`) | One entity, one question |
+| Fetch incident details from URL | `context_get_urls` | Already have the URL |
+
+Fine-grained tools (`context_search_prs`, `context_search_issues`, `context_search_messages`, `context_search_code`, etc.) are available in the Unblocked CLI. On MCP, fall back to `context_research` with a steering `instruction`.

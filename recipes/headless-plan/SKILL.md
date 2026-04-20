@@ -4,7 +4,7 @@ description: >
   Headless planning workflow that gathers organizational context and produces a
   validated implementation plan without writing code. Use when an agent needs to
   plan a change autonomously — for handoff to another agent, a cloud executor,
-  or human review. Hydrates with research_task, drafts a plan with inlined
+  or human review. Hydrates with context_research, drafts a plan with inlined
   context, and validates it against team patterns. No codegen phase.
 ---
 
@@ -22,13 +22,13 @@ Autonomous planning for headless execution. Apply this to the planning task in t
 ## How This Works
 
 1. **Hydrate deeply** — the plan must be self-contained, so gather more than usual:
-   - `research_task` (`effort: medium`): "How does [feature area] work? What conventions, naming patterns, and utilities should be reused?"
-   - `research_task` (`effort: medium`): "What decisions about [area]? Has this been tried before? Recent PRs, rejected approaches, active migrations?"
-   - `research_task` (`effort: medium`): "Team patterns for [error handling / testing / config] in [area]? Known gotchas or constraints? Include code examples."
+   - `context_research` (`effort: medium`): "How does [feature area] work? What conventions, naming patterns, and utilities should be reused?"
+   - `context_research` (`effort: medium`): "What decisions about [area]? Has this been tried before? Recent PRs, rejected approaches, active migrations?"
+   - `context_research` (`effort: medium`): "Team patterns for [error handling / testing / config] in [area]? Known gotchas or constraints? Include code examples."
 2. **Draft the plan** with inline context — paste code snippets, quote PR descriptions.
    - **Instead of:** "Follow the team's error handling pattern"
    - **Write:** "Wrap service calls in try/catch, log with `logger.error({ err, context })`. Example from `src/api/users.ts:45-60`: [paste code]"
-3. **Validate against Unblocked** using targeted `unblocked_context_engine` queries — does this align with existing patterns? Has this been tried? What could go wrong? Loop up to 3 times if major issues are found.
+3. **Validate against Unblocked** using targeted `context_research` queries (`effort: low`) — does this align with existing patterns? Has this been tried? What could go wrong? Loop up to 3 times if major issues are found.
 4. Output the finalized plan.
 
 ### Plan Structure
@@ -52,9 +52,11 @@ Before outputting: every convention shown with example, all relevant PRs summari
 
 ## Tool Selection
 
-| Question | Tool |
-|---|---|
-| Broad investigation (3+ unknowns, multi-source) | `research_task` |
-| Validate a specific plan element | `unblocked_context_engine` |
-| Recent PRs/issues in area | `data_retrieval` |
-| Specific PR/issue details | `link_resolver` |
+| Question | Preferred tool | Fallback |
+|---|---|---|
+| Broad investigation (3+ unknowns, multi-source) | `context_research` (`effort: medium` or `high`) | — |
+| Validate a specific plan element | `context_research` (`effort: low`) | — |
+| Recent PRs/issues in area | `context_search_prs` / `context_search_issues` (CLI) | `context_research` with a steering `instruction` |
+| Specific PR/issue details | `context_get_urls` | — |
+
+Fine-grained tools (`context_search_prs`, `context_search_issues`, `context_search_code`, etc.) are available in the Unblocked CLI. On MCP, fall back to `context_research` with a steering `instruction`.

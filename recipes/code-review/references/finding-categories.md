@@ -6,13 +6,13 @@ Ordered by priority. When reporting, group findings by category in this order.
 
 The PR uses approach X, but the team has an established pattern Y for this kind of thing. Most common and highest-value finding from context-aware review.
 
-**Validate with:** `unblocked_context_engine` — "Does the team use [pattern X or Y] for [this kind of thing]?"
+**Validate with:** `context_research` (`effort: low`) — "Does the team use [pattern X or Y] for [this kind of thing]?"
 
 ## 2. Reinvented Wheel
 
 The PR creates something that already exists as a utility, helper, or shared module in the codebase.
 
-**Validate with:** `unblocked_context_engine` — "Does a utility for [X] already exist?"
+**Validate with:** `context_research` (`effort: low`) — "Does a utility for [X] already exist?"
 
 ## 3. Convention Drift
 
