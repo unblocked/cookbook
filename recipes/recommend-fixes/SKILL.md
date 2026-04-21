@@ -23,11 +23,11 @@ Produce ranked fix recommendations for the incident in the user's prompt. Valida
 
 ## How This Works
 
-1. **Parse the incident** via `link_resolver` (URL), `data_retrieval` (Jira ticket), `research_task` (Datadog/Sentry incident), or from the prompt. Extract: root cause (confirmed or suspected), affected service(s), severity, current impact, what's been tried so far.
-2. **Research fix patterns** via `research_task`:
+1. **Parse the incident** via `context_get_urls` (URL), `context_search_issues` or `context_research` (Jira ticket), `context_research` (Datadog/Sentry incident), or from the prompt. Extract: root cause (confirmed or suspected), affected service(s), severity, current impact, what's been tried so far.
+2. **Research fix patterns** via `context_research`:
    - Historical fixes (`effort: medium`): "How has [root cause type] been fixed before in [affected service] or similar services? Past remediation PRs, rollback procedures, hotfix patterns. Were there regressions or side effects from past fixes?"
    - Team patterns (`effort: medium`): "What are the team's patterns for [type of fix — scaling, config, code, rollback]? Deployment and testing requirements for production changes? Change management process? Feature flags or kill switches available?"
-   - If specific code needs changing: use `unblocked_context_engine` to understand conventions, tests, and constraints for that code.
+   - If specific code needs changing: use `context_research` (`effort: low`) or `context_search_code` (CLI) to understand conventions, tests, and constraints for that code.
 3. **Validate each candidate fix** — check against historical patterns:
    - Has this been applied before? What happened?
    - Known side effects or regressions?
@@ -40,12 +40,14 @@ Produce ranked fix recommendations for the incident in the user's prompt. Valida
 
 ## Tool Selection
 
-| Question | Tool | Why This Tool |
+| Question | Preferred tool | Fallback / Why |
 |---|---|---|
-| Historical fixes and remediation patterns | `research_task` | Cross-source synthesis across past PRs, incidents, and postmortems |
-| Team deployment and testing patterns | `research_task` | Need conventions from multiple sources (docs, PRs, Slack) |
-| Conventions and constraints for specific code | `unblocked_context_engine` | One entity, focused question about how to change it |
-| Prior occurrences of this error | `failure_debugging` | Error-specific history and past fixes |
-| Fetch incident details from URL | `link_resolver` | Already have the URL |
-| All past Jira tickets for a service (exhaustive list) | `data_retrieval` | Need complete filtered list for pattern matching |
-| Datadog/Sentry incident data for a service | `research_task` | Direct Datadog/Sentry data requires cross-source investigation |
+| Historical fixes and remediation patterns | `context_research` (`effort: medium`) | Cross-source synthesis across past PRs, incidents, and postmortems |
+| Team deployment and testing patterns | `context_research` (`effort: medium`) | Need conventions from multiple sources (docs, PRs, Slack) |
+| Conventions and constraints for specific code | `context_search_code` (CLI) | `context_research` (`effort: low`) with `"Prefer code and implementation results"` instruction |
+| Prior occurrences of this error | `context_research` (`effort: low`) anchored on the error text | Error-specific history and past fixes |
+| Fetch incident details from URL | `context_get_urls` | Already have the URL |
+| All past Jira tickets for a service (exhaustive list) | `context_search_issues` (CLI) | `context_research` with `"Prefer issue tracker results"` instruction |
+| Datadog/Sentry incident data for a service | `context_research` (`effort: medium`) | Direct incident-platform data requires cross-source investigation |
+
+Fine-grained tools (`context_search_code`, `context_search_issues`, `context_search_prs`, `context_search_messages`, etc.) are available in the Unblocked CLI. On MCP, fall back to `context_research` with a steering `instruction` — see the `unblocked-tools-guide` skill for the full mapping.

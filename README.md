@@ -32,7 +32,7 @@ Designed for autonomous execution — CI/CD, `claude -p`, sub-agents, scheduled 
 
 | Recipe | Description |
 |--------|-------------|
-| [headless-workflow](recipes/headless-workflow/) | Autonomous coding workflow — `research_task` hydration, autonomous review gates, no user checkpoints |
+| [headless-workflow](recipes/headless-workflow/) | Autonomous coding workflow — `context_research` hydration, autonomous review gates, no user checkpoints |
 | [headless-code-review](recipes/headless-code-review/) | Autonomous code review — findings grounded in team patterns, structured report output |
 | [headless-plan](recipes/headless-plan/) | Autonomous planning — validated, self-contained implementation plan without writing code |
 | [headless-enrich-ticket](recipes/headless-enrich-ticket/) | Autonomous ticket enrichment — related PRs, code paths, and historical context |
@@ -46,7 +46,7 @@ Designed for autonomous execution — CI/CD, `claude -p`, sub-agents, scheduled 
 ### Prerequisites
 
 - Claude Code CLI installed (`claude --version` to verify)
-- Unblocked MCP server configured (provides `research_task`, `unblocked_context_engine`, etc.)
+- Unblocked MCP server configured (provides `context_research`, `context_get_urls`, etc.)
 - API key or authentication set up for non-interactive use
 
 ### 1. Install Unblocked
