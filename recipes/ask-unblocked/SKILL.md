@@ -82,7 +82,7 @@ Answer the user's question by researching organizational context — PRs, docs, 
 | Narrow follow-up on one entity | `context_research` (`effort: low`) | Anchored on a specific file, service, or concept |
 | Full content of a referenced URL | `context_get_urls` | PRs, docs, issues, Slack threads, design docs |
 | Current state of code | Read, Bash (grep/find) | Verify context_research findings against live code |
-| Focused code search across repos | `context_research` (`effort: medium`) with `"Prefer code results"` instruction | When the answer is in the implementation |
+| Focused code search across repos | `context_research` (`effort: low`) with `"Prefer code results"` instruction | When the answer is in the implementation |
 
 ## Abort Conditions
 
