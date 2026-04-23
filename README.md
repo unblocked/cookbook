@@ -18,6 +18,7 @@ Designed for interactive sessions where a human reviews findings and approves de
 
 | Recipe | Description |
 |--------|-------------|
+| [ask-unblocked](recipes/ask-unblocked/) | Answer any question about the codebase, team, or org using Unblocked context — with diagrams, tables, and citations |
 | [code-review](recipes/code-review/) | Code review that gathers org context before analyzing a diff — presents findings for discussion |
 | [plan](recipes/plan/) | Planning that produces a validated, self-contained implementation plan — presented for user approval |
 | [enrich-ticket](recipes/enrich-ticket/) | Enriches an issue from any tracker with related PRs, code paths, and historical context |
