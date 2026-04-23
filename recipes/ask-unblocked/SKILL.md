@@ -36,7 +36,7 @@ Answer the user's question by researching organizational context — PRs, docs, 
 3. **Follow-up research** — based on primary results, drill into gaps:
    - If primary results reference specific URLs (PRs, docs, issues, Slack threads) → fetch full content via `context_get_urls`.
    - If a specific code area is implicated → use local tools (Read, Bash with grep/find) to examine current code.
-   - If primary results are thin → run additional `context_research` queries (`effort: medium`) with different angles or narrower scope.
+   - If primary results are thin → run additional `context_research` queries (`effort: low`) with different angles or narrower scope.
    - If the question involves a specific URL the user provided → fetch it via `context_get_urls` first, then research surrounding context.
 
 4. **Synthesize the answer** — structure depends on question type (see step 1). Always include:
