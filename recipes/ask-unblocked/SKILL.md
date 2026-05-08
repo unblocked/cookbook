@@ -48,14 +48,11 @@ Answer the user's question by researching organizational context — PRs, docs, 
 ## Rendering Rules
 
 1. **Citations**: Render links to source documents in markdown URL format: `[descriptive text](url)`. Inline citations where they support a claim, and collect all sources in the final section.
-2. **Architecture / component questions**: Render a Mermaid diagram showing relationships, data flow, or system boundaries.
-   ````
-   ```mermaid
-   graph TD
-       A[Service A] --> B[Service B]
-       B --> C[(Database)]
-   ```
-   ````
+2. **Architecture / component questions**: Convert mermaid diagrams to terminal-rendered text using `termaid`, then **copy the output into your answer** inside a plain code block. Steps:
+   1. Run via Bash: `echo '<mermaid syntax>' | uvx termaid`
+   2. Capture the text output from termaid.
+   3. Paste that output verbatim into your answer inside a fenced code block (` ``` `). Do NOT output raw mermaid syntax — the terminal cannot render it. The rendered diagram must appear inline in your answer text, not only in a Bash tool result.
+   4. If `uvx termaid` fails, fall back to hand-drawn ASCII art with box-drawing characters.
 3. **Tradeoffs / comparisons / optimizations**: Render a markdown table with options as rows and evaluation criteria as columns.
 4. **Timelines / history**: Render a markdown table with Date, Event, and Source columns, ordered chronologically.
 5. **Code patterns**: Render code blocks with file paths as language annotations (e.g., `` ```typescript // src/auth/middleware.ts ```) and explain the pattern.
@@ -82,6 +79,7 @@ Answer the user's question by researching organizational context — PRs, docs, 
 | Narrow follow-up on one entity | `context_research` (`effort: low`) | Anchored on a specific file, service, or concept |
 | Full content of a referenced URL | `context_get_urls` | PRs, docs, issues, Slack threads, design docs |
 | Current state of code | Read, Bash (grep/find) | Verify context_research findings against live code |
+| Render mermaid diagram | Bash (`echo '...' \| uvx termaid`) | Pipe mermaid syntax to termaid, display ASCII output |
 | Focused code search across repos | `context_research` (`effort: low`) with `"Prefer code results"` instruction | When the answer is in the implementation |
 
 ## Abort Conditions
