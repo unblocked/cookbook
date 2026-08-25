@@ -25,6 +25,7 @@ Designed for interactive sessions where a human reviews findings and approves de
 | [investigate-incident](recipes/investigate-incident/) | Plans an incident investigation with ranked hypotheses and parallel investigation tracks |
 | [gather-evidence](recipes/gather-evidence/) | Gathers and correlates evidence from code, infrastructure, and organizational sources |
 | [recommend-fixes](recipes/recommend-fixes/) | Produces ranked fix recommendations validated against historical patterns |
+| [risk-triage](recipes/risk-triage/) | Triages PRs labelled by Unblocked's risk assessment — judges the real risk, applies safe fixes in a scratch worktree, and presents an annotated diff for approval before anything is written back. Optionally renders notes inline with [Hunk](https://www.hunk.dev) |
 
 ### Headless (no human-in-the-loop)
 
