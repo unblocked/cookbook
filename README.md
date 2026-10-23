@@ -1,111 +1,67 @@
 # Cookbook
 
-Recipes that compose [Unblocked skills](https://github.com/unblocked/skills) for specific scenarios. Each recipe is a fully functional skill meant to be **forked and customized** for your environment before production use.
+Recipes for agent skills that give your coding agent the context your team already has: the PRs, decisions, tickets, threads, and incidents behind the code. Each one is a single `SKILL.md` on the open [Agent Skills](https://agentskills.io) spec, so the same file works in Claude Code, Codex, Devin, Factory, Grok Build, or your own harness. They are short on purpose. They say when to reach for Unblocked and what good output looks like, and leave the rest to the model.
 
-## How to Use
+| Skill | Use it when |
+|---|---|
+| [ask-unblocked](recipes/ask-unblocked/) | A question needs the team's history, not just the code |
+| [code-review](recipes/code-review/) | Reviewing a diff where conventions and past decisions matter |
+| [plan](recipes/plan/) | Planning a change before any code is written |
+| [enrich-ticket](recipes/enrich-ticket/) | A ticket needs context before someone picks it up |
+| [validate-bug](recipes/validate-bug/) | Deciding whether a bug report is real and what caused it |
+| [investigate-incident](recipes/investigate-incident/) | An alert needs ranked hypotheses and an investigation plan |
+| [gather-evidence](recipes/gather-evidence/) | An incident needs a sourced timeline tested against hypotheses |
+| [recommend-fixes](recipes/recommend-fixes/) | An incident has a root cause and needs fixes checked against history |
+| [risk-triage](recipes/risk-triage/) | A PR carries an Unblocked risk label and needs de-risking |
 
-1. Browse the recipes below
-2. Copy the recipe directory into your project's `.claude/skills/` (or your agent's skill folder)
-3. Adjust the workflow to fit your team's tools, conventions, and constraints
-4. Update any reference file paths to match your project structure
-5. Iterate on the gotchas section as you discover new failure modes
+Every skill runs both interactively and unattended. Unattended, it takes the default at each fork, says which default it took, and lists the forks at the end for a human to review.
 
-## Available Recipes
+## Use a recipe
 
-### Interactive (human-in-the-loop)
+These are recipes, not a package. Each one shows a working pattern for one job, and it is meant to be copied into your project and changed to fit how your team works before you rely on it.
 
-Designed for interactive sessions where a human reviews findings and approves decisions. Use progressive disclosure via `references/` files for detailed templates and guidance.
+1. Copy the recipe folder from `recipes/` into the directory your agent reads skills from:
 
-| Recipe | Description |
-|--------|-------------|
-| [ask-unblocked](recipes/ask-unblocked/) | Answer any question about the codebase, team, or org using Unblocked context — with diagrams, tables, and citations |
-| [code-review](recipes/code-review/) | Code review that gathers org context before analyzing a diff — presents findings for discussion |
-| [plan](recipes/plan/) | Planning that produces a validated, self-contained implementation plan — presented for user approval |
-| [enrich-ticket](recipes/enrich-ticket/) | Enriches an issue from any tracker with related PRs, code paths, and historical context |
-| [validate-bug](recipes/validate-bug/) | Validates a bug report by correlating symptoms with recent changes and verifying against code |
-| [investigate-incident](recipes/investigate-incident/) | Plans an incident investigation with ranked hypotheses and parallel investigation tracks |
-| [gather-evidence](recipes/gather-evidence/) | Gathers and correlates evidence from code, infrastructure, and organizational sources |
-| [recommend-fixes](recipes/recommend-fixes/) | Produces ranked fix recommendations validated against historical patterns |
-| [risk-triage](recipes/risk-triage/) | Triages PRs labelled by Unblocked's risk assessment — judges the real risk, applies safe fixes in a scratch worktree, and presents an annotated diff for approval before anything is written back. Optionally renders notes inline with [Hunk](https://www.hunk.dev) |
+| Agent | Project skills directory |
+|---|---|
+| Claude Code | `.claude/skills/` |
+| Codex, Devin, Factory | `.agents/skills/` |
+| Grok Build | `.grok/skills/` |
 
-### Headless (no human-in-the-loop)
+2. Edit the copy to match your environment: your tracker and incident tools, the queries that find your team's conventions, where output should go (a ticket comment, a PR review, a file), and what your agent may do unattended.
+3. Run it on a few real tasks, and add what you learn to the skill.
 
-Designed for autonomous execution — CI/CD, `claude -p`, sub-agents, scheduled tasks. All context is inlined in a single `SKILL.md` (no `references/` dependencies). Autonomous decision-making at review gates with abort conditions.
+## Connect Unblocked
 
-| Recipe | Description |
-|--------|-------------|
-| [headless-workflow](recipes/headless-workflow/) | Autonomous coding workflow — `context_research` hydration, autonomous review gates, no user checkpoints |
-| [headless-code-review](recipes/headless-code-review/) | Autonomous code review — findings grounded in team patterns, structured report output |
-| [headless-plan](recipes/headless-plan/) | Autonomous planning — validated, self-contained implementation plan without writing code |
-| [headless-enrich-ticket](recipes/headless-enrich-ticket/) | Autonomous ticket enrichment — related PRs, code paths, and historical context |
-| [headless-validate-bug](recipes/headless-validate-bug/) | Autonomous bug validation — correlates symptoms with recent changes, verifies against code |
-| [headless-investigate-incident](recipes/headless-investigate-incident/) | Autonomous incident investigation — ranked hypotheses, agent-optimized output |
-| [headless-gather-evidence](recipes/headless-gather-evidence/) | Autonomous evidence gathering — correlation timeline, agent-optimized output |
-| [headless-recommend-fixes](recipes/headless-recommend-fixes/) | Autonomous fix recommendations — tiered fixes validated against history, agent-optimized output |
-
-## Running Headless
-
-### Prerequisites
-
-- Claude Code CLI installed (`claude --version` to verify)
-- Unblocked MCP server configured (provides `context_research`, `context_get_urls`, etc.)
-- API key or authentication set up for non-interactive use
-
-### 1. Install Unblocked
+Interactive sessions use the Unblocked MCP server (`context_research`, `context_get_urls`). Install the CLI and MCP config, and sign in through the browser:
 
 ```bash
 curl -fsSL https://getunblocked.com/install-mcp.sh | bash
 ```
 
-### 2. Copy the recipe into your project
+Unattended runs (CI, `claude -p`, Devin, background agents) call the CLI, which prints JSON on stdout:
 
 ```bash
-cp -r recipes/headless-workflow /path/to/your-project/.claude/skills/headless-workflow
+export UNBLOCKED_API_TOKEN=...   # or UNBLOCKED_API_TOKEN_FILE=/run/secrets/unblocked-token
+unblocked context-research --query "How does checkout retry failed payments?" --effort medium
 ```
 
-### 3. Run with `-p` (print mode)
-
-Claude auto-discovers skills from `.claude/skills/` and follows the workflow:
-
-```bash
-claude -p "Implement rate limiting for the API" \
-  --allowedTools "Bash,Read,Edit,Write,Grep,Glob" \
-  --output-format json
-```
-
-### 4. CI/CD and Docker (bare mode)
-
-In `--bare` mode, auto-discovery is disabled for faster, reproducible runs. Load the skill and MCP config explicitly:
-
-```bash
-claude --bare -p "Implement rate limiting for the API" \
-  --allowedTools "Bash,Read,Edit,Write,Grep,Glob" \
-  --mcp-config ./mcp.json \
-  --append-system-prompt-file .claude/skills/headless-workflow/SKILL.md
-```
-
-Create an `mcp.json` pointing to the Unblocked MCP server:
+For a remote MCP client without the CLI, send your token as a header:
 
 ```json
 {
   "mcpServers": {
     "unblocked": {
       "type": "http",
-      "url": "https://getunblocked.com/api/mcpsse"
+      "url": "https://getunblocked.com/api/mcpsse",
+      "headers": { "Authorization": "Bearer ${UNBLOCKED_API_TOKEN}" }
     }
   }
 }
 ```
 
-### Key flags
+The same calls are available over REST at `POST https://getunblocked.com/api/v1/context/research` and its siblings, if your plan includes the Context API. See the [Unblocked docs](https://docs.getunblocked.com) for tokens and setup per agent.
 
-| Flag | Purpose |
-|------|---------|
-| `-p` | Run non-interactively (print mode) |
-| `--bare` | Skip auto-discovery for faster, reproducible runs |
-| `--allowedTools` | Pre-approve tools so the agent doesn't prompt for permission |
-| `--mcp-config` | Load MCP servers explicitly (required in bare mode) |
-| `--append-system-prompt-file` | Load the skill content explicitly (required in bare mode) |
-| `--output-format json` | Get structured output with session metadata |
-| `--max-turns N` | Limit agent turns to cap compute cost |
-| `--max-budget-usd N` | Set a dollar spend limit |
+## License
+
+MIT. See [LICENSE](LICENSE). Copy, change, and redistribute the recipes freely.

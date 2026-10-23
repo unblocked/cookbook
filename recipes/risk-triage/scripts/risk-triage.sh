@@ -123,7 +123,16 @@ additive, code actually reachable from production traffic, new failure modes on
 write paths, new behaviour the tests do not exercise, changes that cannot be rolled
 back, and behavioural changes not behind a feature flag.
 
-Then do two things.
+Reachability matters most. Trace the callers of the changed code locally, then ask
+Unblocked what the code can't tell you:
+
+    unblocked context-research --effort medium \\
+      --query "What calls <changed paths> in production, and what incidents or decisions involve them?"
+
+It prints JSON with a summary and cited sources. If the command is missing or fails,
+carry on without it and say so in NOTES.md.
+
+Then do the following.
 
 1. APPLY the risk-reducing changes you are confident in, directly in this worktree.
    Keep them minimal, mechanical and self-contained: add the missing test, guard the
@@ -187,7 +196,7 @@ run_agent() {
       # .claude/settings.local.json, which commonly allows Bash(git *) and Bash(gh pr *)
       # — enough for the agent to comment on or push to the PR. Deny beats allow.
       ( cd "$wt" && claude -p --permission-mode acceptEdits \
-          --allowedTools 'Read,Grep,Glob,Edit,Write,Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(git status:*)' \
+          --allowedTools 'Read,Grep,Glob,Edit,Write,Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(git status:*),Bash(unblocked context-research:*),Bash(unblocked context-get-urls:*)' \
           --disallowedTools 'Bash(gh:*),Bash(git push:*),Bash(git commit:*),Bash(git checkout:*),Bash(git switch:*),Bash(git branch:*),Bash(git reset:*),Bash(git remote:*),Bash(curl:*),Bash(wget:*),WebFetch,WebSearch' \
           >/dev/null )
       ;;
