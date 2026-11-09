@@ -13,6 +13,7 @@ Recipes for agent skills that give your coding agent the context your team alrea
 | [gather-evidence](recipes/gather-evidence/) | An incident needs a sourced timeline tested against hypotheses |
 | [recommend-fixes](recipes/recommend-fixes/) | An incident has a root cause and needs fixes checked against history |
 | [risk-triage](recipes/risk-triage/) | A PR carries an Unblocked risk label and needs de-risking |
+| [unblocked-insights](recipes/unblocked-insights/) | Evaluating whether Unblocked helped in past coding-agent sessions |
 
 Every skill runs both interactively and unattended. Unattended, it takes the default at each fork, says which default it took, and lists the forks at the end for a human to review.
 
